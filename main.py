@@ -1,19 +1,21 @@
 from flask import Flask, request, redirect
+from flask_cors import CORS
 import yt_dlp
 
 app = Flask(__name__)
+CORS(app) # যাতে অন্য কোনো সাইট থেকে ব্লক না হয়
 
 @app.route('/download')
 def download():
     video_url = request.args.get('url')
-    quality = request.args.get('quality', '360') # ডিফল্ট ৩৬০পি
+    quality = request.args.get('quality', '360') 
 
     if not video_url:
         return "No URL provided", 400
 
     ydl_opts = {
-        # কোয়ালিটি অনুযায়ী ফরম্যাট সিলেক্ট করবে
-        'format': f'best[height<={quality}][ext=mp4]/best[ext=mp4]',
+        # এই ফরম্যাটটি ১০৮০পি ভিডিও এবং অডিওকে একসাথে মার্জ করে সেরা কোয়ালিটি দিবে
+        'format': f'bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<={quality}][ext=mp4]/best',
         'quiet': True,
     }
 
@@ -24,4 +26,4 @@ def download():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-  
+    
