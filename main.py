@@ -1,6 +1,6 @@
-from flask import Flask, request, redirect
-from flask_cors import CORS
 import yt_dlp
+from flask import Flask, request, redirect, Response
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
@@ -8,23 +8,27 @@ CORS(app)
 @app.route('/download')
 def download():
     video_url = request.args.get('url')
-    quality = request.args.get('quality', '720') # ডিফল্ট ৭২০পি
+    quality = request.args.get('quality', '1080')
 
     if not video_url:
-        return "No URL provided", 400
+        return "URL is missing", 400
 
+    # ১০৮০পি-র জন্য সেরা ভিডিও এবং অডিও স্ট্রীম খুঁজে বের করা
     ydl_opts = {
-        # ব্রাউজারে সরাসরি প্লে করার জন্য mp4 ফরম্যাট ব্যবহার করা সবচেয়ে নিরাপদ
-        'format': f'best[height<={quality}][ext=mp4]/best[ext=mp4]/best',
+        'format': f'bestvideo[height<={quality}][ext=mp4]+bestaudio[ext=m4a]/best[height<={quality}][ext=mp4]/best',
         'quiet': True,
-        'nocheckcertificate': True
+        'nocheckcertificate': True,
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(video_url, download=False)
             video_direct_url = info.get('url')
-            return redirect(video_direct_url)
+            
+            # ডাউনলোড করার জন্য হেডার সেট করা
+            response = redirect(video_direct_url)
+            response.headers['Content-Disposition'] = f'attachment; filename="video_{quality}p.mp4"'
+            return response
     except Exception as e:
         return str(e), 500
 
