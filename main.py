@@ -8,16 +8,15 @@ CORS(app)
 @app.route('/download')
 def download():
     video_url = request.args.get('url')
-    quality = request.args.get('quality', '360') 
+    quality = request.args.get('quality', '720') # ডিফল্ট ৭২০পি
 
     if not video_url:
         return "No URL provided", 400
 
-    # ১০৮০পি প্লে না হলে এটি অটোমেটিক সেরা এভেইলএবল কোয়ালিটি নিয়ে নিবে
     ydl_opts = {
-        'format': f'best[height<={quality}][ext=mp4]/best',
+        # ব্রাউজারে সরাসরি প্লে করার জন্য mp4 ফরম্যাট ব্যবহার করা সবচেয়ে নিরাপদ
+        'format': f'best[height<={quality}][ext=mp4]/best[ext=mp4]/best',
         'quiet': True,
-        'no_warnings': True,
         'nocheckcertificate': True
     }
 
